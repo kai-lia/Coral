@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Overlay on OpenStreetMap</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Ensure body and html take up full height */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        /* Map container styling: take up full height minus the header */
+        #map {
+            width: 100%;
+            height: calc(100vh - 60px); /* Adjust the height dynamically based on the viewport height */
+        }
+
+        /* Header styling */
+        h1 {
+            margin: 0;
+            padding: 10px;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Graph Overlay on OpenStreetMap</h1>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        let map;
+
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const earthRadius = 6371e3;
+            const toRadians = angle => angle * Math.PI / 180;
+
+            const φ1 = toRadians(lat1);
+            const φ2 = toRadians(lat2);
+            const Δφ = toRadians(lat2 - lat1);
+            const Δλ = toRadians(lon2 - lon1);
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return earthRadius * c; // Distance in meters
+        }
+
+        function getZoomLevel(distance) {
+            if (distance > 5000000) { // > 5000 km
+                return 1;
+            } else if (distance > 1000000) { // > 1000 km
+                return 3;
+            } else if (distance > 500000) { // > 500 km
+                return 5;
+            } else if (distance > 100000) { // > 100 km
+                return 7;
+            } else if (distance > 50000) { // > 50 km
+                return 9;
+            } else {
+                return 11;
+            }
+        }
+
+        fetch("/graph-data")
+            .then(response => response.json())
+            .then(data => {
+                const firstLon = data.nodes.longitude[0];
+                const firstLat = data.nodes.latitude[0];
+
+                map = L.map('map').setView([firstLat, firstLon], 2); 
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                // Plot edges as lines and calculate the longest edge length
+                let maxDistance = 0;
+
+                for (let i = 0; i < data.edges.longitude.length; i += 2) {
+                    const lon1 = data.edges.longitude[i];
+                    const lat1 = data.edges.latitude[i];
+                    const lon2 = data.edges.longitude[i + 1];
+                    const lat2 = data.edges.latitude[i + 1];
+
+                    const distance = haversineDistance(lat1, lon1, lat2, lon2);
+                    if (distance > maxDistance) {
+                        maxDistance = distance;
+                    }
+
+                    // Draw the edge as a polyline
+                    L.polyline([[lat1, lon1], [lat2, lon2]], { color: 'blue' }).addTo(map);
+
+                    const midLat = (lat1 + lat2) / 2;
+                    const midLon = (lon1 + lon2) / 2;
+
+                    const label = L.divIcon({
+                        className: 'edge-label',
+                        html: `<div style="background-color: white; padding: 0px; border: 1px solid black; border-radius: 4px;">100</div>`,
+                        iconSize: null
+                    });
+                    L.marker([midLat, midLon], { icon: label }).addTo(map);
+                }
+
+                data.nodes.longitude.forEach((lon, idx) => {
+                    const lat = data.nodes.latitude[idx];
+                    L.circleMarker([lat, lon], {
+                        radius: 8,            // Size of the circle
+                        color: 'blue',        // Border color
+                        fillColor: 'red',     // Fill color
+                        fillOpacity: 1      // Opacity of the fill
+                    }).addTo(map)
+                    .bindPopup(`Node ${idx}`);
+                });
+
+                map.setView([firstLat, firstLon], getZoomLevel(maxDistance));
+            })
+            .catch(error => console.error('Error fetching graph data:', error));
+    </script>
+</body>
+</html>

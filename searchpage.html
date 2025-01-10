@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Reefs Near You</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            background: url('sand.jpg') no-repeat center center/cover;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .dynamic-word {
+            color: #ccc;
+            animation: fadeInOut 3s infinite;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            25% { opacity: 1; }
+            75% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .search-container {
+            display: flex;
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 8px 0 0 8px;
+            outline: none;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #799cbf;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #42678b;
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(1);
+        }
+        .suggestions {
+            max-height: 200px;
+            overflow-y: auto;
+            background: white; 
+            position: absolute;
+            width: 95%;
+            z-index: 1;
+            top: 95%;
+        }
+        .suggestions div {
+            padding: 10px;
+            cursor: pointer;
+            color: black; 
+            transition: background-color 0.2s;
+        }
+        .suggestions div:hover {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Find <span class="dynamic-word" id="dynamic-word">reefs near you</span></h1>
+        <div class="search-container">
+            <input id="address-input" type="text" placeholder="Enter an address, coordinates, city, or ZIP code">
+            <button id="search-button">Search</button>
+            <div id="suggestions" class="suggestions"></div>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
