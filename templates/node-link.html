@@ -45,126 +45,97 @@
     </div>
 
     <script>
-        fetch("/graph-data")
-            .then(response => response.json())
-            .then(data => {
-                const mainNode = data.main_node;
-                const nodeIndexes = data.nodes.index;
-                const nodeNames = data.nodes.name;
-                const nodeLats = data.nodes.lat;
-                const nodeLongs = data.nodes.lon;
+        // The `graph_data` is passed from Flask to the template
+        const graphData = {{ graph_data | tojson }};
+        console.log(graphData);
 
-                // Identify the index of the main node
-                let mainNodeIndex = nodeIndexes.findIndex(index => index === mainNode);
-                let colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? 'red' : 'skyblue');
+        const mainNode = graphData.main_node;
+        const nodeIndexes = graphData.nodes.index;
+        const nodeNames = graphData.nodes.name;
+        const nodeLats = graphData.nodes.lat;
+        const nodeLongs = graphData.nodes.lon;
 
-                const edge_trace = {
-                    x: data.edges.x,
-                    y: data.edges.y,
-                    mode: 'lines',
-                    line: { width: 2, color: data.edges.line_color },
-                    hoverinfo: 'none',
-                };
+        // Identify the index of the main node
+        let mainNodeIndex = nodeIndexes.findIndex(index => index === mainNode);
 
-                let node_trace = {
-                    x: data.nodes.x,
-                    y: data.nodes.y,
-                    mode: 'markers+text',
-                    marker: {
-                        color: colors,
-                        size: 50,
-                        line: { width: 2 },
-                        opacity: 1,
-                    },
-                    textposition: 'middle center',
-                    hoverinfo: 'none',
-                };
+        // Initialize colors: main node as red, others as skyblue
+        let colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? 'red' : 'skyblue');
 
-                const edgeWeights = data.edges.weights;
-                const edgeLabelX = [];
-                const edgeLabelY = [];
-                const edgeLabels = [];
+        // Edge trace
+        const edge_trace = {
+            x: graphData.edges.x,
+            y: graphData.edges.y,
+            mode: 'lines',
+            line: { width: 2, color: graphData.edges.line_color },
+            hoverinfo: 'none',
+        };
 
-                for (let i = 0; i < data.edges.x.length; i += 3) {
-                    const x0 = data.edges.x[i];
-                    const y0 = data.edges.y[i];
-                    const x1 = data.edges.x[i + 1];
-                    const y1 = data.edges.y[i + 1];
+        // Node trace
+        let node_trace = {
+            x: graphData.nodes.x,
+            y: graphData.nodes.y,
+            mode: 'markers+text',
+            marker: {
+                color: colors,
+                size: 10,
+                line: { width: 2 },
+                opacity: 1,
+            },
+            text: graphData.nodes.name,
+            textposition: 'top center',
+            hoverinfo: 'text',
+        };
 
-                    if (x0 !== null && x1 !== null && y0 !== null && y1 !== null) {
-                        const midX = (x0 + x1) / 2;
-                        const midY = (y0 + y1) / 2;
-                        edgeLabelX.push(midX);
-                        edgeLabelY.push(midY);
-                        edgeLabels.push(edgeWeights[i / 3].toFixed(2));
-                    }
+        // Plotly layout
+        const layout = {
+            title: 'Reef Network Graph',
+            showlegend: false,
+            hovermode: 'closest',
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'white',
+            xaxis: { visible: false },
+            yaxis: { visible: false },
+            margin: { l: 50, r: 50, t: 50, b: 50 },
+        };
+
+        const config = { responsive: true };
+
+        // Plot the initial graph
+        Plotly.newPlot('graph', [edge_trace, node_trace], layout, config);
+
+        // Function to update node colors and info box
+        function updateNodeInfo(pointIndex) {
+            const nodeIndex = nodeIndexes[pointIndex];
+            const nodeLat = nodeLats[pointIndex];
+            const nodeLon = nodeLongs[pointIndex];
+            const nodeName = nodeNames[pointIndex];
+
+            // Update info box
+            document.getElementById('info-text').innerHTML = `
+                <strong>Index:</strong> ${nodeIndex} <br>
+                <strong>Name:</strong> ${nodeName} <br>
+                <strong>Latitude:</strong> ${nodeLat} <br>
+                <strong>Longitude:</strong> ${nodeLon}
+            `;
+
+            // Update colors: highlight the selected node
+            colors = nodeIndexes.map((_, idx) => {
+                if (idx === pointIndex) {
+                    return idx === mainNodeIndex ? 'darkred' : 'darkblue';
                 }
+                return idx === mainNodeIndex ? 'red' : 'skyblue';
+            });
 
-                const edge_label_trace = {
-                    x: edgeLabelX,
-                    y: edgeLabelY,
-                    mode: 'text',
-                    text: edgeLabels,
-                    textposition: 'middle center',
-                    hoverinfo: 'none',
-                    showlegend: false,
-                    font: {
-                        size: 12,
-                        color: 'black',
-                    },
-                };
+            // Update the node trace with new colors
+            Plotly.restyle('graph', 'marker.color', [colors]);
+        }
 
-                const layout = {
-                    title_x: 0.5,
-                    title_font: { size: 24, color: 'rgb(50,50,50)' },
-                    showlegend: false,
-                    hovermode: 'closest',
-                    plot_bgcolor: 'white',
-                    paper_bgcolor: 'white',
-                    xaxis: { visible: false },
-                    yaxis: { visible: false },
-                    margin: { l: 50, r: 50, t: 50, b: 50 },
-                };
-
-                const config = { responsive: true };
-
-                Plotly.newPlot('graph', [edge_trace, node_trace, edge_label_trace], layout, config);
-
-                // Function to update node color and info box
-                function updateNodeInfo(pointIndex) {
-                    const nodeIndex = nodeIndexes[pointIndex];
-                    const nodeLat = nodeLats[pointIndex];
-                    const nodeLong = nodeLongs[pointIndex];
-                    const nodeName = nodeNames[pointIndex];
-
-                    // Update info box
-                    document.getElementById('info-text').innerHTML = `
-                        <strong>Index:</strong> ${nodeIndex} <br>
-                        <strong>Name:</strong> ${nodeName} <br>
-                        <strong>Latitude:</strong> ${nodeLat} <br>
-                        <strong>Longitude:</strong> ${nodeLong}
-                    `;
-
-                    colors = nodeIndexes.map((_, idx) => {
-                        if (idx === pointIndex) {
-                            return idx === mainNodeIndex ? 'rgb(139, 0, 0)' : 'rgb(0, 0, 139)'; // Dark Red or Dark Purple
-                        }
-                        return idx === mainNodeIndex ? 'red' : 'skyblue';
-                    });
-
-                    // Redraw the plot with updated colors
-                    Plotly.react('graph', [edge_trace, { ...node_trace, marker: { ...node_trace.marker, color: colors } }, edge_label_trace], layout, config);
-                }
-
-
-                updateNodeInfo(mainNodeIndex);
-                const graphDiv = document.getElementById('graph');
-                graphDiv.on('plotly_click', function(data) {
-                    const pointIndex = data.points[0].pointNumber;
-                    updateNodeInfo(pointIndex);
-                });
-            })
-            .catch(error => console.error('Error fetching graph data:', error));
+        // Add click event listener to the graph
+        const graphDiv = document.getElementById('graph');
+        graphDiv.on('plotly_click', function(data) {
+            const pointIndex = data.points[0].pointNumber;
+            updateNodeInfo(pointIndex);
+        });
     </script>
 </body>
 </html>
