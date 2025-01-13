@@ -111,11 +111,12 @@ if __name__ == "__main__":
         font_weight="bold",
     )
     nx.draw_networkx_edge_labels(
-        graph,
+         graph,
         positions,
-        edge_labels={
-            (u, v): f"{d['weight']:.2f}" for u, v, d in graph.edges(data=True)
-        },
+        edge_labels={(u, v): f"{d['weight']:.2f}" for u, v, d in graph.edges(data=True)},  # Ensure the weight is formatted
+        font_color="red",  # Optional: Change the font color of edge labels
+        font_size=10       # Optional: Adjust font size for better readability
     )
+    
     plt.title("Graph Visualization with Nodes and Similarity Scores")
     plt.show()
