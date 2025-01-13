@@ -15,8 +15,8 @@
         /* Style for the info box */
         #info-box {
             position: absolute;
-            top: 20px;
-            left: 20px; /* Move to top-left corner */
+            top: 40px;
+            right: 20px; /* Move to top-left corner */
             width: 250px;
             padding: 15px;
             border: 1px solid #ccc;
@@ -106,11 +106,36 @@
             
         };
 
+         // Define a color map for strata values
+         const strataColorsSelected = {
+            1: '#305986',
+            2: '#749EBA',
+            3: '#C26203',
+            4: '#CC8E4F',
+            5: '#3C8132',
+            6: '#65A757',
+            7: '#92760E',
+            8: '#C19F38',
+            9: '#2E7A76',
+            10: '#639691',
+            11: '#B43031',
+            12: '#CC6E6B',
+            13: '#615856',
+            14: '#958B87',
+            15: '#A94C6D',
+            16: '#C88FA2',
+            17: '#8D597E',
+            18: '#AA7D9E',
+            19: '#7E5843',
+            20: '#AC8B7D',
+
+        };
+
         // Identify the index of the main node
         let mainNodeIndex = nodeIndexes.findIndex(index => index === mainNode);
 
         // Initialize default colors
-        let colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? 'red' : 'skyblue');
+        let colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? '#f4737a' : 'skyblue');
 
         // Edge trace
         const edge_trace = {
@@ -173,23 +198,29 @@
 
             // If the checkbox is checked, highlight by strata
             if (document.getElementById('highlight-strata').checked) {
-                highlightByStrata();
+                highlightByStrata(pointIndex);
             } else {
                 // Update colors: highlight the selected node
+                //used classic blue-red 12 sceheme
                 colors = nodeIndexes.map((_, idx) => {
                     if (idx === pointIndex) {
-                        return idx === mainNodeIndex ? 'darkred' : 'darkblue';
+                        return idx === mainNodeIndex ? '#bd0a36' : '#2c69b0';
                     }
-                    return idx === mainNodeIndex ? 'red' : 'skyblue';
+                    return idx === mainNodeIndex ? '#f4737a' : 'skyblue';
                 });
                 Plotly.restyle('graph', 'marker.color', [colors]);
             }
         }
 
         // Function to highlight nodes by strata
-        function highlightByStrata() {
+        function highlightByStrata(pointIndex) {
             colors = nodeStratas.map((strata, idx) => {
-                return strataColors[strata] || 'gray'; // Default color for undefined strata
+                if (idx === pointIndex) {
+                    return strataColorsSelected[strata];
+            } else {
+                return  strataColors[strata];
+            }
+
             });
             Plotly.restyle('graph', 'marker.color', [colors]);
         }
@@ -200,7 +231,7 @@
                 highlightByStrata();
             } else {
                 // Reset colors to default
-                colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? 'red' : 'skyblue');
+                colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? '#f4737a' : 'skyblue');
                 Plotly.restyle('graph', 'marker.color', [colors]);
             }
         });
