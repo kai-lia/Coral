@@ -16,7 +16,7 @@
         #info-box {
             position: absolute;
             top: 20px;
-            right: 20px;
+            left: 20px; /* Move to top-left corner */
             width: 250px;
             padding: 15px;
             border: 1px solid #ccc;
@@ -35,6 +35,26 @@
             font-size: 14px;
             margin: 0;
         }
+
+        /* Style for the checkbox container */
+        #checkbox-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+            border-radius: 5px;
+        }
+
+        #checkbox-container label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -44,8 +64,13 @@
         <p id="info-text">Click on a node to see details here.</p>
     </div>
 
+    <div id="checkbox-container">
+        <label>
+            <input type="checkbox" id="highlight-strata" /> Highlight nodes by strata
+        </label>
+    </div>
+
     <script>
-        // The `graph_data` is passed from Flask to the template
         const graphData = {{ graph_data | tojson }};
         console.log(graphData);
 
@@ -54,11 +79,28 @@
         const nodeNames = graphData.nodes.name;
         const nodeLats = graphData.nodes.lat;
         const nodeLongs = graphData.nodes.lon;
+        const nodeStratas = graphData.nodes.strata;
+
+        // Define a color map for strata values
+        const strataColors = {
+            1: 'red',
+            2: 'green',
+            3: 'blue',
+            4: 'yellow',
+            5: 'orange',
+            6: 'purple',
+            7: 'cyan',
+            8: 'magenta',
+            9: 'brown',
+            10: 'lime',
+            11: 'teal',
+            12: 'pink',
+        };
 
         // Identify the index of the main node
         let mainNodeIndex = nodeIndexes.findIndex(index => index === mainNode);
 
-        // Initialize colors: main node as red, others as skyblue
+        // Initialize default colors
         let colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? 'red' : 'skyblue');
 
         // Edge trace
@@ -109,26 +151,50 @@
             const nodeLat = nodeLats[pointIndex];
             const nodeLon = nodeLongs[pointIndex];
             const nodeName = nodeNames[pointIndex];
+            const nodeStrata = nodeStratas[pointIndex];
 
             // Update info box
             document.getElementById('info-text').innerHTML = `
                 <strong>Index:</strong> ${nodeIndex} <br>
                 <strong>Name:</strong> ${nodeName} <br>
                 <strong>Latitude:</strong> ${nodeLat} <br>
-                <strong>Longitude:</strong> ${nodeLon}
+                <strong>Longitude:</strong> ${nodeLon} <br>
+                <strong>Strata:</strong> ${nodeStrata}
             `;
 
-            // Update colors: highlight the selected node
-            colors = nodeIndexes.map((_, idx) => {
-                if (idx === pointIndex) {
-                    return idx === mainNodeIndex ? 'darkred' : 'darkblue';
-                }
-                return idx === mainNodeIndex ? 'red' : 'skyblue';
-            });
+            // If the checkbox is checked, highlight by strata
+            if (document.getElementById('highlight-strata').checked) {
+                highlightByStrata();
+            } else {
+                // Update colors: highlight the selected node
+                colors = nodeIndexes.map((_, idx) => {
+                    if (idx === pointIndex) {
+                        return idx === mainNodeIndex ? 'darkred' : 'darkblue';
+                    }
+                    return idx === mainNodeIndex ? 'red' : 'skyblue';
+                });
+                Plotly.restyle('graph', 'marker.color', [colors]);
+            }
+        }
 
-            // Update the node trace with new colors
+        // Function to highlight nodes by strata
+        function highlightByStrata() {
+            colors = nodeStratas.map((strata, idx) => {
+                return strataColors[strata] || 'gray'; // Default color for undefined strata
+            });
             Plotly.restyle('graph', 'marker.color', [colors]);
         }
+
+        // Add event listener for the checkbox
+        document.getElementById('highlight-strata').addEventListener('change', () => {
+            if (document.getElementById('highlight-strata').checked) {
+                highlightByStrata();
+            } else {
+                // Reset colors to default
+                colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? 'red' : 'skyblue');
+                Plotly.restyle('graph', 'marker.color', [colors]);
+            }
+        });
 
         // Add click event listener to the graph
         const graphDiv = document.getElementById('graph');
