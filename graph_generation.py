@@ -28,7 +28,8 @@ def load_graph_from_csv(file_path, main_node, top_n, depth_k):
         lat = df.at[node, "lat"]
         long = df.at[node, "long"]
         name = df.at[node, "name"]
-        G.add_node(node, index=node, lat=lat, long=long, name=name)
+        strata = int(df.at[node, "strata"])
+        G.add_node(node, index=node, lat=lat, long=long, name=name, strata=strata)
 
     queue = [(main_node, 0)]
     visited = set()

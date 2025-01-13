@@ -70,11 +70,13 @@ def generate_graph_data(lat, lon, csv_path="data/test-data.csv", top_n=8, depth_
     node_name = []
     node_lat = []
     node_long = []
+    node_strata = []
     for node in G.nodes():
         node_index.append(node)
         node_name.append(G.nodes[node].get("name", None))
         node_lat.append(G.nodes[node].get("lat", None))
         node_long.append(G.nodes[node].get("long", None))
+        node_strata.append(G.nodes[node].get("strata", None))
 
     edge_x = []
     edge_y = []
@@ -100,6 +102,7 @@ def generate_graph_data(lat, lon, csv_path="data/test-data.csv", top_n=8, depth_
             "name": node_name,
             "lat": node_lat,
             "lon": node_long,
+            "strata": node_strata,
         },
         "edges": {
             "x": edge_x,
