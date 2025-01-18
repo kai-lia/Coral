@@ -6,19 +6,54 @@
     <title>Interactive Graph</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        #graph { width: 100%; height: 600px; }
+        /* Style for the graph container */
+        #graph {
+            width: 100%;
+            height: 600px;
+        }
+
+        /* Style for the info box */
         #info-box {
-            position: absolute; top: 40px; right: 20px;
-            width: 250px; padding: 15px;
+            position: absolute;
+            top: 40px;
+            right: 20px; /* Move to top-left corner */
+            width: 250px;
+            padding: 15px;
             border: 1px solid #ccc;
             background-color: #f9f9f9;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             font-family: Arial, sans-serif;
             z-index: 1000;
         }
-        #slider-container {
-            position: absolute; top: 20px; left: 20px;
+
+        #info-box h2 {
+            font-size: 18px;
+            margin-top: 0;
+        }
+
+        #info-box p {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* Style for the checkbox container */
+        #checkbox-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
             z-index: 1000;
+            border-radius: 5px;
+        }
+
+        #checkbox-container label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -28,19 +63,106 @@
         <h2>Reef Information</h2>
         <p id="info-text">Click on a node to see details here.</p>
     </div>
-    <div id="slider-container">
-        <label for="weight-slider">Weight Filter:</label>
-        <input type="range" id="weight-slider" min="0" step="0.01" value="0" />
-        <span id="slider-value">0</span>
+
+    <div id="checkbox-container">
+        <label>
+            <input type="checkbox" id="highlight-strata" /> Highlight nodes by strata
+        </label>
     </div>
 
     <script>
         const graphData = {{ graph_data | tojson }};
+        console.log(graphData);
+
         const mainNode = graphData.main_node;
         const nodeIndexes = graphData.nodes.index;
+        const nodeNames = graphData.nodes.name;
+        const nodeLats = graphData.nodes.lat;
+        const nodeLongs = graphData.nodes.lon;
+        const nodeStratas = graphData.nodes.strata;
 
-        let colors = nodeIndexes.map((_, idx) => idx === mainNode ? '#f4737a' : 'skyblue');
+        // Define a color map for strata values
+        const strataColors = {
+            1: '#4E79A7',
+            2: '#A0CBE8',
+            3: '#F28E2B',
+            4: '#FFBE7D',
+            5: '#59A14F',
+            6: '#8CD17D',
+            7: '#B6992D',
+            8: '#F1CE63',
+            9: '#499894',
+            10: '#86BCB6',
+            11: '#E15759',
+            12: '#FF9D9A',
+            13: '#79706E',
+            14: '#BAB0AC',
+            15: '#D37295',
+            16: '#FABFD2',
+            17: '#B07AA1',
+            18: '#D4A6C8',
+            19: '#9D7660',
+            20: '#D7B5A6',
+            
+        };
 
+         // Define a color map for strata values
+         const strataColorsSelected = {
+            1: '#305986',
+            2: '#749EBA',
+            3: '#C26203',
+            4: '#CC8E4F',
+            5: '#3C8132',
+            6: '#65A757',
+            7: '#92760E',
+            8: '#C19F38',
+            9: '#2E7A76',
+            10: '#639691',
+            11: '#B43031',
+            12: '#CC6E6B',
+            13: '#615856',
+            14: '#958B87',
+            15: '#A94C6D',
+            16: '#C88FA2',
+            17: '#8D597E',
+            18: '#AA7D9E',
+            19: '#7E5843',
+            20: '#AC8B7D',
+
+        };
+
+        // Identify the index of the main node
+        let mainNodeIndex = nodeIndexes.findIndex(index => index === mainNode);
+
+        // Initialize default colors
+        let colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? '#f4737a' : 'skyblue');
+
+        // Edge trace
+        const edge_trace = {
+            x: graphData.edges.x,
+            y: graphData.edges.y,
+            mode: 'lines',
+            line: { width: 2, color: graphData.edges.line_color },
+            hoverinfo: 'none',
+        };
+
+        // Node trace
+        let node_trace = {
+            x: graphData.nodes.x,
+            y: graphData.nodes.y,
+            mode: 'markers+text',
+            marker: {
+                color: colors,
+                size: 50,
+                line: { width: 2 },
+                opacity: 1,
+            },
+            text: graphData.nodes.name,
+            textposition: 'middle center',
+            hoverinfo: 'text',
+        };
+
+        // Plotly layout
         const layout = {
             title: 'Reef Network Graph',
             showlegend: false,
@@ -49,108 +171,77 @@
             paper_bgcolor: 'white',
             xaxis: { visible: false },
             yaxis: { visible: false },
+            margin: { l: 50, r: 50, t: 50, b: 50 },
         };
 
-        // Dynamically set the slider max based on edge weights
-        const maxWeight = Math.max(...graphData.edges.weights);
-        const slider = document.getElementById('weight-slider');
-        const sliderValue = document.getElementById('slider-value');
-        slider.max = maxWeight;
-        slider.value = 0;
-        sliderValue.textContent = slider.value;
+        const config = { responsive: true };
 
-        // Debugging: Log initial graph data
-        console.log("Initial Graph Data:", graphData);
+        // Plot the initial graph
+        Plotly.newPlot('graph', [edge_trace, node_trace], layout, config);
 
-        function filterGraph(weightThreshold) {
-            console.log(`Applying weight threshold: ${weightThreshold}`);
-            const filteredEdges = { x: [], y: [], weights: [] };
-            const connectedNodes = new Set();
+        // Function to update node colors and info box
+        function updateNodeInfo(pointIndex) {
+            const nodeIndex = nodeIndexes[pointIndex];
+            const nodeLat = nodeLats[pointIndex];
+            const nodeLon = nodeLongs[pointIndex];
+            const nodeName = nodeNames[pointIndex];
+            const nodeStrata = nodeStratas[pointIndex];
 
-            // Filter edges and track connected nodes
-            for (let i = 0; i < graphData.edges.x.length; i += 3) {
-                const edgeWeight = graphData.edges.weights[Math.floor(i / 3)];
-                console.log(`Edge ${Math.floor(i / 3)}: Weight=${edgeWeight}`);
-                if (edgeWeight >= weightThreshold) {
-                    console.log(`Including Edge ${Math.floor(i / 3)}`);
-                    filteredEdges.x.push(graphData.edges.x[i], graphData.edges.x[i + 1], null);
-                    filteredEdges.y.push(graphData.edges.y[i], graphData.edges.y[i + 1], null);
-                    filteredEdges.weights.push(edgeWeight);
+            // Update info box
+            document.getElementById('info-text').innerHTML = `
+                <strong>Index:</strong> ${nodeIndex} <br>
+                <strong>Name:</strong> ${nodeName} <br>
+                <strong>Latitude:</strong> ${nodeLat} <br>
+                <strong>Longitude:</strong> ${nodeLon} <br>
+                <strong>Strata:</strong> ${nodeStrata}
+            `;
 
-                    const startNodeIndex = Math.floor(i / 3);
-                    const endNodeIndex = Math.floor(i / 3);
-
-                    if (graphData.nodes.index[startNodeIndex]) {
-                        connectedNodes.add(graphData.nodes.index[startNodeIndex]);
+            // If the checkbox is checked, highlight by strata
+            if (document.getElementById('highlight-strata').checked) {
+                highlightByStrata(pointIndex);
+            } else {
+                // Update colors: highlight the selected node
+                //used classic blue-red 12 sceheme
+                colors = nodeIndexes.map((_, idx) => {
+                    if (idx === pointIndex) {
+                        return idx === mainNodeIndex ? '#bd0a36' : '#2c69b0';
                     }
-                    if (graphData.nodes.index[endNodeIndex]) {
-                        connectedNodes.add(graphData.nodes.index[endNodeIndex]);
-                    }
-                } else {
-                    console.log(`Excluding Edge ${Math.floor(i / 3)}`);
-                }
+                    return idx === mainNodeIndex ? '#f4737a' : 'skyblue';
+                });
+                Plotly.restyle('graph', 'marker.color', [colors]);
             }
-
-            console.log("Connected Nodes:", Array.from(connectedNodes));
-
-            const filteredNodes = { x: [], y: [], name: [], color: [], strata: [] };
-            graphData.nodes.index.forEach((node, i) => {
-                if (connectedNodes.has(node)) { // Compare node names
-                    console.log(`Including Node: ${node}`);
-                    filteredNodes.x.push(graphData.nodes.x[i]);
-                    filteredNodes.y.push(graphData.nodes.y[i]);
-                    filteredNodes.name.push(graphData.nodes.name[i]);
-                    filteredNodes.color.push(colors[i]);
-                    filteredNodes.strata.push(graphData.nodes.strata[i]);
-                } else {
-                    console.log(`Excluding Node: ${node}`);
-                }
-            });
-
-            console.log("Filtered Nodes:", filteredNodes);
-            console.log("Filtered Edges:", filteredEdges);
-
-            // Update traces
-            const newEdgeTrace = {
-                x: filteredEdges.x,
-                y: filteredEdges.y,
-                line: { width: 2, color: graphData.edges.line_color },
-                mode: 'lines',
-                hoverinfo: 'none',
-            };
-
-            const newNodeTrace = {
-                x: filteredNodes.x,
-                y: filteredNodes.y,
-                mode: 'markers+text',
-                marker: {
-                    color: filteredNodes.color,
-                    size: 50,
-                    line: { width: 2 },
-                    opacity: 1,
-                },
-                text: filteredNodes.name,
-                textposition: 'middle center',
-                hoverinfo: 'text',
-            };
-
-            console.log("Edge Trace:", newEdgeTrace);
-            console.log("Node Trace:", newNodeTrace);
-
-            // Update the graph
-            Plotly.react('graph', [newEdgeTrace, newNodeTrace], layout);
         }
 
-        // Add event listener for the slider
-        slider.addEventListener('input', () => {
-            const weightThreshold = parseFloat(slider.value);
-            console.log(`Current Weight Threshold: ${weightThreshold}`);
-            sliderValue.textContent = weightThreshold.toFixed(2);
-            filterGraph(weightThreshold);
+        // Function to highlight nodes by strata
+        function highlightByStrata(pointIndex) {
+            colors = nodeStratas.map((strata, idx) => {
+                if (idx === pointIndex) {
+                    return strataColorsSelected[strata];
+            } else {
+                return  strataColors[strata];
+            }
+
+            });
+            Plotly.restyle('graph', 'marker.color', [colors]);
+        }
+
+        // Add event listener for the checkbox
+        document.getElementById('highlight-strata').addEventListener('change', () => {
+            if (document.getElementById('highlight-strata').checked) {
+                highlightByStrata();
+            } else {
+                // Reset colors to default
+                colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? '#f4737a' : 'skyblue');
+                Plotly.restyle('graph', 'marker.color', [colors]);
+            }
         });
 
-        // Initial plot
-        filterGraph(0);
+        // Add click event listener to the graph
+        const graphDiv = document.getElementById('graph');
+        graphDiv.on('plotly_click', function(data) {
+            const pointIndex = data.points[0].pointNumber;
+            updateNodeInfo(pointIndex);
+        });
     </script>
 </body>
 </html>
