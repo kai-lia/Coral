@@ -49,46 +49,9 @@ def load_graph_from_csv(file_path, main_node, top_n, depth_k):
     return G
 
 
-def assign_positions(G, main_node, min_distance=0.1, min_angle_deg=30):
-    positions = {}
-    positions[main_node] = (random.uniform(0, 1), random.uniform(0, 1))
-    placed_angles = []
-
-    def is_valid_position(new_pos):
-        for pos in positions.values():
-            distance = math.sqrt(
-                (new_pos[0] - pos[0]) ** 2 + (new_pos[1] - pos[1]) ** 2
-            )
-            if distance < min_distance:
-                return False
-        return True
-
-    def is_valid_angle(new_angle):
-        for angle in placed_angles:
-            if abs(new_angle - angle) < min_angle_deg:
-                return False
-        return True
-
-    for node in G.nodes:
-        if node != main_node:
-            valid_position = False
-            while not valid_position:
-                angle = random.uniform(0, 360)
-                radius = random.uniform(min_distance, 1)
-
-                # Convert polar coordinates to Cartesian coordinates
-                x_main, y_main = positions[main_node]
-                new_x = x_main + radius * math.cos(math.radians(angle))
-                new_y = y_main + radius * math.sin(math.radians(angle))
-
-                new_pos = (new_x, new_y)
-
-                if is_valid_position(new_pos) and is_valid_angle(angle):
-                    valid_position = True
-                    placed_angles.append(angle)
-
-            positions[node] = new_pos
-
+def assign_positions(G, main_node):
+    # Use the Fruchterman-Reingold force-directed algorithm
+    positions = nx.spring_layout(G, center=(0.5, 0.5), seed=42, scale=1.0, k=2)
     return positions
 
 
@@ -111,12 +74,14 @@ if __name__ == "__main__":
         font_weight="bold",
     )
     nx.draw_networkx_edge_labels(
-         graph,
+        graph,
         positions,
-        edge_labels={(u, v): f"{d['weight']:.2f}" for u, v, d in graph.edges(data=True)},  # Ensure the weight is formatted
+        edge_labels={
+            (u, v): f"{d['weight']:.2f}" for u, v, d in graph.edges(data=True)
+        },  # Ensure the weight is formatted
         font_color="red",  # Optional: Change the font color of edge labels
-        font_size=10       # Optional: Adjust font size for better readability
+        font_size=10,  # Optional: Adjust font size for better readability
     )
-    
+
     plt.title("Graph Visualization with Nodes and Similarity Scores")
     plt.show()
