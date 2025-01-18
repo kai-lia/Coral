@@ -137,7 +137,6 @@
         // Initialize default colors
         let colors = nodeIndexes.map((_, idx) => idx === mainNodeIndex ? '#f4737a' : 'skyblue');
 
-        // Edge trace
         const edge_trace = {
             x: graphData.edges.x,
             y: graphData.edges.y,
@@ -145,6 +144,28 @@
             line: { width: 2, color: graphData.edges.line_color },
             hoverinfo: 'none',
         };
+
+        const edge_label_trace = {
+            x: [],
+            y: [],
+            mode: 'text',
+            text: graphData.edges.weights.map(weight => `${weight.toFixed(3)}`),
+            textposition: 'middle center',
+            hoverinfo: 'none',
+            showlegend: false,
+        };
+
+        for (let i = 0; i < graphData.edges.x.length; i += 3) {
+            if (graphData.edges.x[i + 1] !== null && graphData.edges.y[i + 1] !== null) {
+                const x0 = graphData.edges.x[i];
+                const x1 = graphData.edges.x[i + 1];
+                const y0 = graphData.edges.y[i];
+                const y1 = graphData.edges.y[i + 1];
+                
+                edge_label_trace.x.push((x0 + x1) / 2);
+                edge_label_trace.y.push((y0 + y1) / 2);
+            }
+        }
 
         // Node trace
         let node_trace = {
@@ -177,7 +198,7 @@
         const config = { responsive: true };
 
         // Plot the initial graph
-        Plotly.newPlot('graph', [edge_trace, node_trace], layout, config);
+        Plotly.newPlot('graph', [edge_trace, edge_label_trace, node_trace], layout, config);
 
         // Function to update node colors and info box
         function updateNodeInfo(pointIndex) {
