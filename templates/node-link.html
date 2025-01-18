@@ -155,7 +155,7 @@
             showlegend: false,
         };
 
-        for (let i = 0; i < graphData.edges.x.length; i += 3) {
+        for (let i = 0; i < graphData.edges.x.length; i += 2) {
             if (graphData.edges.x[i + 1] !== null && graphData.edges.y[i + 1] !== null) {
                 const x0 = graphData.edges.x[i];
                 const x1 = graphData.edges.x[i + 1];

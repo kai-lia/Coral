@@ -86,8 +86,8 @@ def generate_graph_data(lat, lon, csv_path="data/test-data.csv", top_n=8, depth_
         try:
             x0, y0 = positions[edge[0]]
             x1, y1 = positions[edge[1]]
-            edge_x += [x0, x1, None]
-            edge_y += [y0, y1, None]
+            edge_x += [x0, x1]
+            edge_y += [y0, y1]
 
             weight = G.edges[edge].get("weight", 1)
             edge_weights.append(weight)
