@@ -1,10 +1,11 @@
-from flask import Flask, jsonify, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request, url_for, session
 import networkx as nx
 import pandas as pd
 import math
 from graph_generation import load_graph_from_csv, assign_positions
 
 app = Flask(__name__)
+app.secret_key = "your-secret-key"
 
 
 # Function to find the closest node based on latitude and longitude
@@ -136,12 +137,16 @@ def display_graph():
 
     if not graph_data:
         return "No valid node found. Please try again with a different location.", 400
+    session["graph_data"] = graph_data
 
     return render_template("node-link.html", graph_data=graph_data)
 
 
 @app.route("/graph-data")
-def graph_data():
+def serve_graph_data():
+    graph_data = session.get("graph_data")
+    if not graph_data:
+        return "Graph data not found. Generate it first.", 404
     return jsonify(graph_data)
 
 
