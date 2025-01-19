@@ -81,7 +81,6 @@ function filterGraph(weightThreshold) {
         }
     });
 
-    // React with the updated traces
     Plotly.react(
         'graph',
         [updatedEdgeTrace, updatedEdgeLabelTrace, updatedNodeTrace],
@@ -89,9 +88,8 @@ function filterGraph(weightThreshold) {
         config
     );
 
-    // Restore strata highlight if enabled
     if (document.getElementById('highlight-strata').checked) {
-        highlightByStrata(); // Reapply strata colors
+        highlightByStrata();
     }
 }
 
