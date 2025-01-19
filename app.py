@@ -140,7 +140,7 @@ def display_graph():
         return "No valid node found. Please try again with a different location.", 400
     session["graph_data"] = graph_data
 
-    return render_template("node-link.html", graph_data=graph_data)
+    return render_template("node-link/node-link.html", graph_data=graph_data)
 
 
 @app.route("/graph-data")
