@@ -45,7 +45,7 @@ function filterGraph(weightThreshold) {
         hoverinfo: 'none',
         showlegend: false,
     };
-    
+
     for (let i = 0; i < filteredEdgesX.length; i += 3) {
         const x0 = filteredEdgesX[i];
         const x1 = filteredEdgesX[i + 1];
@@ -56,6 +56,7 @@ function filterGraph(weightThreshold) {
             updatedEdgeLabelTrace.y.push((y0 + y1) / 2);
         }
     }
+
     const updatedNodeTrace = {
         x: [],
         y: [],
@@ -75,13 +76,23 @@ function filterGraph(weightThreshold) {
         if (filteredNodes.has(nodeIndex)) {
             updatedNodeTrace.x.push(graphData.nodes.x[idx]);
             updatedNodeTrace.y.push(graphData.nodes.y[idx]);
-            updatedNodeTrace.marker.color.push('skyblue');
+            updatedNodeTrace.marker.color.push(colors[idx]); // Use existing colors
             updatedNodeTrace.text.push(graphData.nodes.name[idx]);
         }
     });
 
-    console.log('Graph updated with filtered edges.'); 
-    Plotly.react('graph', [updatedEdgeTrace, updatedEdgeLabelTrace, updatedNodeTrace], layout, config);
+    // React with the updated traces
+    Plotly.react(
+        'graph',
+        [updatedEdgeTrace, updatedEdgeLabelTrace, updatedNodeTrace],
+        layout,
+        config
+    );
+
+    // Restore strata highlight if enabled
+    if (document.getElementById('highlight-strata').checked) {
+        highlightByStrata(); // Reapply strata colors
+    }
 }
 
 slider.addEventListener('input', () => {
