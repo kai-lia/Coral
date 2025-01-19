@@ -121,7 +121,7 @@ def generate_graph_data(lat, lon, csv_path="data/test-data.csv", top_n=8, depth_
 # Route to render the search page
 @app.route("/")
 def search_page():
-    return render_template("searchpage.html")
+    return render_template("searchpage/searchpage.html")
 
 
 # Route to handle the graph generation based on lat/long
