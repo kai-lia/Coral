@@ -108,7 +108,7 @@ def generate_graph_data(lat, lon, csv_path="data/test-data.csv", top_n=8, depth_
         "edges": {
             "x": edge_x,
             "y": edge_y,
-            "nodes": list(G.edges),
+            "nodes": [node for tup in list(G.edges) for node in tup],
             "weights": edge_weights,
             "line_color": "rgba(0,0,0, 0.2)",
         },
