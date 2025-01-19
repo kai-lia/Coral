@@ -55,6 +55,10 @@
             color: #333;
             cursor: pointer;
         }
+        #slider-container {
+            position: absolute; top: 20px; left: 20px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -68,6 +72,11 @@
         <label>
             <input type="checkbox" id="highlight-strata" /> Highlight nodes by strata
         </label>
+    </div>
+    <div id="slider-container">
+        <label for="weight-slider">Weight Filter:</label>
+        <input type="range" id="weight-slider" min="0" max="1" step="0.01" value="0" />
+        <span id="slider-value">0</span>
     </div>
 
     <script>
