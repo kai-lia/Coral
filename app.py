@@ -36,6 +36,7 @@ def find_closest_node(lat, lon, csv_path):
         try:
             node_lat = float(row["lat"])
             node_lon = float(row["long"])
+            print(node_lat, node_lon)
             distance = math.sqrt((lat - node_lat) ** 2 + (lon - node_lon) ** 2)
             if distance < min_distance:
                 min_distance = distance
@@ -46,14 +47,13 @@ def find_closest_node(lat, lon, csv_path):
 
     if closest_node is None:
         print("[WARNING] No closest node found.")
-
     return closest_node
 
 
 # Function to generate graph data
 def generate_graph_data(lat, lon, csv_path="data/test-data.csv", top_n=8, depth_k=1):
     main_node = find_closest_node(lat, lon, csv_path)
-    if not main_node:
+    if main_node is None:
         print("[ERROR] Main node not found. Cannot generate graph data.")
         return None
 
