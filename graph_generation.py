@@ -15,10 +15,18 @@ def load_graph_from_csv(file_path, main_node, top_n, depth_k):
         if len(scores) == 0:
             return []
         top_neighbors = scores.nlargest(min(top_n, len(scores))).index.tolist()
-        return [neighbor.replace(" score", "") for neighbor in top_neighbors]
+        return top_neighbors
 
     df = pd.read_csv(file_path, index_col=0)
-    similarity_columns = [col for col in df.columns if "score" in col.lower()]
+    similarity_columns = [
+        col
+        for col in df.columns
+        if all(
+            keyword not in col.lower()
+            for keyword in ["node", "lat", "long", "strata", "depth", "name"]
+        )
+        and col is not None
+    ]
 
     for col in similarity_columns:
         df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -27,8 +35,8 @@ def load_graph_from_csv(file_path, main_node, top_n, depth_k):
     for node in df.index:
         lat = df.at[node, "lat"]
         long = df.at[node, "long"]
-        name = df.at[node, "name"]
-        strata = int(df.at[node, "strata"])
+        name = float(df.at[node, "name"])
+        strata = float(df.at[node, "strata"])
         G.add_node(node, index=node, lat=lat, long=long, name=name, strata=strata)
 
     queue = [(main_node, 0)]
@@ -39,7 +47,7 @@ def load_graph_from_csv(file_path, main_node, top_n, depth_k):
             visited.add(current_node)
             top_neighbors = get_top_n_similar_nodes(current_node, top_n)
             for neighbor in top_neighbors:
-                similarity_score = df.loc[current_node, f"{neighbor} score"]
+                similarity_score = df.loc[current_node, f"{neighbor}"]
                 G.add_edge(current_node, neighbor, weight=similarity_score)
                 if neighbor not in visited and current_depth + 1 <= depth_k:
                     queue.append((neighbor, current_depth + 1))
@@ -56,7 +64,7 @@ def assign_positions(G, main_node):
 
 
 if __name__ == "__main__":
-    main_node = "node 1"
+    main_node = "S01_088"
     top_n = 8
     depth_k = 1
 
