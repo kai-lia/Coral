@@ -114,7 +114,6 @@ def generate_graph_data(lat, lon, csv_path="data/test-data.csv", top_n=8, depth_
         "main_node": main_node,
     }
 
-    print(graph_data)
     return graph_data
 
 
