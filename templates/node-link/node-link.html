@@ -28,7 +28,8 @@
     <!-- Pass graphData from Flask -->
     <script>
         const graphData = {{ graph_data | tojson | safe }};
-      </script>
+        const resource = {{ resource | tojson | safe }};
+    </script>
 
     <!-- Load external JavaScript -->
     <script src="/static/node-link/displayGraph.js"></script>

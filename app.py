@@ -123,34 +123,41 @@ def search_page():
     return render_template("searchpage/searchpage.html")
 
 
-resource_data = {
-        "Name": resource_name, 
-        "Type": resource_type,
-        "Latitude": resource_lat, 
-        "Longitude": resource_long,
-        "Link": resource_link
-    }
-
-
 # Route to handle the graph generation based on lat/long
 @app.route("/graph", methods=["POST"])
-def index():
-    # Read the CSV file
-    df = pd.read_csv('data/info-data.csv')
-    
-    # Build the resource_data dictionary
-    resource= [
-        {
-            "Name": row['Name'], 
-            "Type": row['Type'], 
-            "Latitude": row['Latitude'], 
-            "Longitude": row['Longitude'], 
-            "Link": row['Link']
+def display_graph():
+    lat = request.form.get("latitude")
+    lon = request.form.get("longitude")
+
+    print(
+        f"[DEBUG] /graph POST received - latitude: {lat}, longitude: {lon}"
+    )  # Debugging
+
+    graph_data = generate_graph_data(lat, lon)
+
+    if not graph_data:
+        return "No valid node found. Please try again with a different location.", 400
+    session["graph_data"] = graph_data
+
+    # Read the CSV file for resource data
+    df = pd.read_csv("data/info-data.csv")
+    resource = {}
+    for i, row in df.iterrows():
+        resource[i] = {
+            "Name": row["Name"],
+            "Type": row["Type"],
+            "Latitude": row["Latitude"],
+            "Longitude": row["Longitude"],
+            "Link": row["Link"],
         }
-        for _, row in df.iterrows()
-    ]
-    # Pass the JSON data to the template
-    return render_template('node-link/node-link.html', resource_data=resource)
+
+    print(resource)  # Debugging
+
+    # Pass both graph_data and resource to the template
+    return render_template(
+        "node-link/node-link.html", graph_data=graph_data, resource=resource
+    )
+
 
 def display_graph():
     lat = request.form.get("latitude")
