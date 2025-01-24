@@ -1,7 +1,7 @@
-Type,Research,Government,Community,Latitude,Longitude,Link
-Community,0,0,Mālama Maunalua Bay,21.2814,-57.7131,https://www.malamamaunalua.org/
-Community,0,0,Kahalu‘u Bay Education Center,19.5791792,-155.96697,https://kohalacenter.org/kbec
-Government,0,Department of Land and Natural Resources,0,19.4824,-155.9309,https://dlnr.hawaii.gov/dsp/files/2021/01/Kealakekua-Bay-SHP-FEIS_Oct.2020_26MB.pdf
-Community,0,0,Hoʻāla Kealakekua Nui ,19.4782,-155.9259,https://kealakekua.org/
-Community,0,0,The Ka‘ūpūlehu Marine Life Advisory Committee ,19.8324,-155.9857,https://www.nature.org/en-us/get-involved/how-to-help/places-we-protect/kaupulehu/
-Community,0,0,Kalanihale ,19.1854,-155.9067,https://www.kalanihale.org/
+Type,Name,Latitude,Longitude,Link
+Community,Mālama Maunalua Bay,21.2814,-57.7131,https://www.malamamaunalua.org/
+Community,Kahalu‘u Bay Education Center,19.5791792,-155.96697,https://kohalacenter.org/kbec
+Government,Department of Land and Natural Resources,19.4824,-155.9309,https://dlnr.hawaii.gov/dsp/files/2021/01/Kealakekua-Bay-SHP-FEIS_Oct.2020_26MB.pdf
+Community,Hoʻāla Kealakekua Nui ,19.4782,-155.9259,https://kealakekua.org/
+Community,The Ka‘ūpūlehu Marine Life Advisory Committee ,19.8324,-155.9857,https://www.nature.org/en-us/get-involved/how-to-help/places-we-protect/kaupulehu/
+Community,Kalanihale ,19.1854,-155.9067,https://www.kalanihale.org/

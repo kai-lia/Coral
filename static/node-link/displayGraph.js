@@ -80,15 +80,41 @@ function updateNodeInfo(pointIndex) {
     const nodeName = nodeNames[pointIndex];
     const nodeStrata = nodeStratas[pointIndex];
 
+    function haversine(lat1, lon1, lat2, lon2) {
+        const toRad = (value) => (value * Math.PI) / 180;
+        const R = 3958.8; // Radius of Earth in miles
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    // Filter resources within 7-mile radius
+    let nearbyResources = infoData.filter(resource => {
+        const resourceLat = parseFloat(resource.Latitude);
+        const resourceLon = parseFloat(resource.Longitude);
+        return haversine(nodeLat, nodeLon, resourceLat, resourceLon) <= 7;
+    });
+
+    // Generate resource info HTML
+    let resourceHTML = "";
+    nearbyResources.forEach(resource => {
+        resourceHTML += `<strong>Type:</strong> ${resource.Type} <br>
+                         <strong>Resources:</strong> <a href="${resource.Link}" target="_blank">${resource.Community}</a> <br>`;
+    });
+
     // Update info box
     document.getElementById('info-text').innerHTML = `
         <strong>Index:</strong> ${nodeIndex} <br>
-        <strong>Name:</strong> ${nodeName} <br>
+        <strong>Strata:</strong> ${nodeStrata} <br>
+        <strong>Site Number:</strong> ${nodeName} <br>
         <strong>Latitude:</strong> ${nodeLat} <br>
         <strong>Longitude:</strong> ${nodeLon} <br>
-        <strong>Strata:</strong> ${nodeStrata}
+        ${resourceHTML}
     `;
-
     // If the checkbox is checked, highlight by strata
     if (document.getElementById('highlight-strata').checked) {
         highlightByStrata(pointIndex);
