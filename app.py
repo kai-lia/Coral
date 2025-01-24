@@ -8,34 +8,6 @@ app = Flask(__name__)
 app.secret_key = "your-secret-key"
 
 
-resource_data = {
-        "Name": resource_name, 
-        "Type": resource_type,
-        "Latitude": resource_lat, 
-        "Longitude": resource_long,
-        "Link": resource_link
-    }
-
-@app.route('/')
-def index():
-    # Read the CSV file
-    df = pd.read_csv('data/info-data.csv')
-    
-    # Build the resource_data dictionary
-    csv_data = [
-        {
-            "Name": row['Name'], 
-            "Type": row['Type'], 
-            "Latitude": row['Latitude'], 
-            "Longitude": row['Longitude'], 
-            "Link": row['Link']
-        }
-        for _, row in df.iterrows()
-    ]
-    # Pass the JSON data to the template
-    return render_template('node-link/node-link.html', resource_data=csv_data)
-
-
 # Function to find the closest node based on latitude and longitude
 def find_closest_node(lat, lon, csv_path):
     try:
@@ -151,8 +123,35 @@ def search_page():
     return render_template("searchpage/searchpage.html")
 
 
+resource_data = {
+        "Name": resource_name, 
+        "Type": resource_type,
+        "Latitude": resource_lat, 
+        "Longitude": resource_long,
+        "Link": resource_link
+    }
+
+
 # Route to handle the graph generation based on lat/long
 @app.route("/graph", methods=["POST"])
+def index():
+    # Read the CSV file
+    df = pd.read_csv('data/info-data.csv')
+    
+    # Build the resource_data dictionary
+    resource= [
+        {
+            "Name": row['Name'], 
+            "Type": row['Type'], 
+            "Latitude": row['Latitude'], 
+            "Longitude": row['Longitude'], 
+            "Link": row['Link']
+        }
+        for _, row in df.iterrows()
+    ]
+    # Pass the JSON data to the template
+    return render_template('node-link/node-link.html', resource_data=resource)
+
 def display_graph():
     lat = request.form.get("latitude")
     lon = request.form.get("longitude")
