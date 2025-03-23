@@ -148,7 +148,6 @@ function updateNodeInfo(pointIndex) {
 
 
 
-
 // Add click event listener to the graph
 const graphDiv = document.getElementById('graph');
 graphDiv.on('plotly_click', function(data) {
