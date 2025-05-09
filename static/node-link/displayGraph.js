@@ -79,14 +79,51 @@ function updateNodeInfo(pointIndex) {
     const nodeLon = nodeLongs[pointIndex];
     const nodeName = nodeNames[pointIndex];
     const nodeStrata = nodeStratas[pointIndex];
+    // Find resource data based on pointIndex or other identifiers
+    const resourceData = resource[pointIndex]; // Assuming pointIndex matches resource index
+
+
+    // Function to calculate distance between two lat/lon points using the Haversine formula
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const toRadians = (degrees) => degrees * (Math.PI / 180);
+        const R = 3958.8; // Radius of Earth in miles
+        const dLat = toRadians(lat2 - lat1);
+        const dLon = toRadians(lon2 - lon1);
+        const a = 
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    let nearbyResources = [];
+    for (const key in resource) {
+        const resourceLat = resource[key].Latitude;
+        const resourceLon = resource[key].Longitude;
+
+        const distance = calculateDistance(nodeLat, nodeLon, resourceLat, resourceLon);
+        if (distance <= 5) {
+            nearbyResources.push(resource[key]);
+        }
+    }
+
+    // Build HTML for resources
+    const resourcesHTML = nearbyResources.length > 0
+        ? nearbyResources.map(res => `
+            <strong>${res.Type} Resources:</strong> 
+            <a href="${res.Link}" target="_blank">${res.Name}</a>
+        `).join('<br>')
+        : '<em>No resource data near this location.</em>';
 
     // Update info box
     document.getElementById('info-text').innerHTML = `
         <strong>Index:</strong> ${nodeIndex} <br>
-        <strong>Name:</strong> ${nodeName} <br>
+        <strong>Site Number:</strong> ${nodeName} <br>
+        <strong>Strata:</strong> ${nodeStrata} <br>
         <strong>Latitude:</strong> ${nodeLat} <br>
         <strong>Longitude:</strong> ${nodeLon} <br>
-        <strong>Strata:</strong> ${nodeStrata}
+        ${resourcesHTML}
     `;
 
     // If the checkbox is checked, highlight by strata
@@ -94,7 +131,6 @@ function updateNodeInfo(pointIndex) {
         highlightByStrata(pointIndex);
     } else {
         // Update colors: highlight the selected node
-        //used classic blue-red 12 sceheme
         colors = nodeIndexes.map((_, idx) => {
             if (idx === pointIndex) {
                 return idx === mainNodeIndex ? '#bd0a36' : '#2c69b0';
@@ -104,6 +140,13 @@ function updateNodeInfo(pointIndex) {
         Plotly.restyle('graph', 'marker.color', [colors]);
     }
 }
+
+
+
+
+
+
+
 
 // Add click event listener to the graph
 const graphDiv = document.getElementById('graph');

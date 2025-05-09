@@ -26,6 +26,7 @@
 #info-box p {
     font-size: 14px;
     margin: 0;
+    font-family: Arial, sans-serif;
 }
 
 /* Style for the checkbox container */
@@ -46,9 +47,11 @@
     font-size: 14px;
     color: #333;
     cursor: pointer;
+    font-family: Arial, sans-serif;
 }
 #slider-container {
     position: absolute; top: 20px; left: 20px;
+    font-family: Arial, sans-serif;
     z-index: 1000;
 }
 

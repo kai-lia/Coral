@@ -28,6 +28,7 @@
     <!-- Pass graphData from Flask -->
     <script>
         const graphData = {{ graph_data | tojson | safe }};
+        const resource = {{ resource | tojson | safe }};
     </script>
 
     <!-- Load external JavaScript -->
